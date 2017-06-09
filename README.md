@@ -81,4 +81,4 @@ FUNCTIONALITY
     PowerShell Language
 NOTES
     Credit to Warren Frame for Invoke-Parallel: https://github.com/RamblingCookieMonster/Invoke-Parallel
-    Credit to SharePoint Online 365 PAV team for assistance.
+    Credit to SharePoint Online 365 PAV team for development assistance & thorough testing.
