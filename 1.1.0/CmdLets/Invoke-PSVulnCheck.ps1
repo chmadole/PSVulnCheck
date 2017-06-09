@@ -127,22 +127,23 @@
 Function Invoke-PSVulnCheck {
     [cmdletbinding()]
     param (
-        [Parameter(Mandatory,ValueFromPipeline)]
-        [Alias('CN','__Server','IPAddress','Server','ComputerName')]
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [Alias('CN', '__Server', 'IPAddress', 'Server', 'ComputerName')]
         [string[]] $InputObject,
         
         [string]   $OutputDirectory = "$env:USERPROFILE\Documents",
 
+        [Alias('VulnManifest', 'Vuln')]
         [object]   $VulnerabilityManifest = "$PSScriptRoot\..\VulnerabilityManifest.psd1",
         
         [switch]   $Passthru
     )
 
-    Begin{
+    Begin {
         #adapted from https://stackoverflow.com/questions/23066783/how-to-strip-illegal-characters-before-trying-to-save-filenames
         Function Remove-InvalidFileNameChars {
             param(
-                [Parameter(Mandatory,Position=0,ValueFromPipeline,ValueFromPipelineByPropertyName)]
+                [Parameter(Mandatory, Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
                 [String[]]$FileName
             )
             Begin {
@@ -161,7 +162,7 @@ Function Invoke-PSVulnCheck {
     End {
         #handle pipeline and non-pipeling input -- put both into the same $ComputerName value
         if ($input) {$ComputerName = [array]$input}
-        else        {$ComputerName = $InputObject}
+        else {$ComputerName = $InputObject}
 
         $vulns = [array](Import-LocalizedData -BaseDirectory (split-path -parent $vulnerabilityManifest) -FileName (split-path -leaf $vulnerabilityManifest))
 
@@ -173,7 +174,7 @@ Function Invoke-PSVulnCheck {
             $vulnName = $vuln.VulnerabilityName | Remove-InvalidFileNameChars
             $OutputDirectory = "$OutputDirectory\$timestamp\$vulnName"
             if (!(Test-Path $OutputDirectory)) {
-                try   { $null = (New-Item -Path $OutputDirectory -ItemType Directory -ErrorAction Stop)}
+                try { $null = (New-Item -Path $OutputDirectory -ItemType Directory -ErrorAction Stop)}
                 catch { Write-Error $_.exception; break}
             }
             
@@ -181,46 +182,48 @@ Function Invoke-PSVulnCheck {
             [array]$allServers = Test-Vulnerability -computerName $ComputerName -KB $vuln.ApplicableHotfixes -TargetFile $vuln.TargetFile -fileVersions $vuln.FileVersions
             
             #create subset of server for display
-            $healthyServers    = $allServers.Where{ $_.FileVersionOk -eq $true }
-            $unknownServers    = $allServers.Where{ $_.status -eq 'Disconnected' -or $_.status -eq 'Unknown' }
+            $healthyServers = $allServers.Where{ $_.FileVersionOk -eq $true }
+            $unknownServers = $allServers.Where{ $_.status -eq 'Disconnected' -or $_.status -eq 'Unknown' }
             $vulnerableServers = $allServers.Where{ $_.FileVersionOk -eq $false }
 
             #if status of servers is unknown, try to ping and do other tests to get their state
             if ($unknownServers) {
                 [array]$serverState = $unknownServers.ComputerName | Test-ComputerState
 
-                $maybeDeadServers  = $serverState.Where{$_.PingResponse -eq $false -and $_.DNSResponse -eq 'No DNS record' -and $_.OSviaWMI -eq 'WMI Query Failed'}
-                $maybeAliveServers = $serverState.Where{$_.PingResponse -ne $false -or  $_.DNSResponse -ne 'No DNS record' -or  $_.OSviaWMI -ne 'WMI Query Failed'}
+                $maybeDeadServers = $serverState.Where{$_.PingResponse -eq $false -and $_.DNSResponse -eq 'No DNS record' -and $_.OSviaWMI -eq 'WMI Query Failed'}
+                $maybeAliveServers = $serverState.Where{$_.PingResponse -ne $false -or $_.DNSResponse -ne 'No DNS record' -or $_.OSviaWMI -ne 'WMI Query Failed'}
             }
 
             #output CSV files for use
-            $allServersPath        = "$OutputDirectory\$vulnName-AllServers_$timestamp.csv"
-            $healthyServersPath    = "$OutputDirectory\$vulnName-HealthyServers_$timestamp.csv"
-            $unknownServersPath    = "$OutputDirectory\$vulnName-UnknownServers_$timestamp.csv"
+            $allServersPath = "$OutputDirectory\$vulnName-AllServers_$timestamp.csv"
+            $healthyServersPath = "$OutputDirectory\$vulnName-HealthyServers_$timestamp.csv"
+            $unknownServersPath = "$OutputDirectory\$vulnName-UnknownServers_$timestamp.csv"
             $vulnerableServersPath = "$OutputDirectory\$vulnName-VulnerableServers_$timestamp.csv"
-            $maybeDeadServersPath  = "$OutputDirectory\$vulnName-MaybeDeadServers_$timestamp.csv"
+            $maybeDeadServersPath = "$OutputDirectory\$vulnName-MaybeDeadServers_$timestamp.csv"
             $maybeAliveServersPath = "$OutputDirectory\$vulnName-MaybeAliveServers_$timestamp.csv"
 
-            if ($allServers)        { $allServers        | Export-CSV -NoTypeInformation -Path $allServersPath }
-            if ($healthyServers)    { $healthyServers    | Export-CSV -NoTypeInformation -Path $healthyServersPath }
-            if ($unknownServers)    { $unknownServers    | Export-CSV -NoTypeInformation -Path $unknownServersPath }
+            if ($allServers) { $allServers        | Export-CSV -NoTypeInformation -Path $allServersPath }
+            if ($healthyServers) { $healthyServers    | Export-CSV -NoTypeInformation -Path $healthyServersPath }
+            if ($unknownServers) { $unknownServers    | Export-CSV -NoTypeInformation -Path $unknownServersPath }
             if ($vulnerableServers) { $vulnerableServers | Export-CSV -NoTypeInformation -Path $vulnerableServersPath }
-            if ($maybeDeadServers)  { $maybeDeadServers  | Export-CSV -NoTypeInformation -Path $maybeDeadServersPath }
+            if ($maybeDeadServers) { $maybeDeadServers  | Export-CSV -NoTypeInformation -Path $maybeDeadServersPath }
             if ($maybeAliveServers) { $maybeAliveServers | Export-CSV -NoTypeInformation -Path $maybeAliveServersPath }
 
             #display healthyServers in green
             If ($healthyServers) {
                 Write-Host -ForegroundColor Green -Object 'THE FOLLOWING SERVERS CONNECTED SUCCESSFULLY AND ARE IN A KNOWN HEALTHY STATE:'
-                Write-Host -ForegroundColor Green ($healthyServers | Select-Object -Property ComputerName,OSVersion,FileVersionOk,TargetFile,TargetFileVersion,ActualFileVersion,Patched,InstalledKBs |  Format-Table -AutoSize | Out-String)
+                Write-Host -ForegroundColor Green ($healthyServers | Select-Object -Property ComputerName, OSVersion, FileVersionOk, TargetFile, TargetFileVersion, ActualFileVersion, Patched, InstalledKBs |  Format-Table -AutoSize | Out-String)
                 Write-Host -ForegroundColor Green -Object "Log File: $healthyServersPath`n"
-            } else {
+            }
+            else {
                 Write-Host -ForegroundColor Yellow -Object "NO SERVERS WERE FOUND IN A GOOD STATE.`n"
             }
 
             #display unkown servers in yellow
             If ($unknownServers) {
                 Write-Host -ForegroundColor Yellow -Object "SERVERS WERE FOUND IN AN UNKNOWN STATE... TESTING THEM FOR POTENTIAL DEAD/ALIVE STATUS:"
-            } else {
+            }
+            else {
                 Write-Host -ForegroundColor Green -Object "NO SERVERS WERE FOUND IN AN UNKNOWN STATE.`n"
             }
             Write-Host "`n"
@@ -230,7 +233,8 @@ Function Invoke-PSVulnCheck {
                 Write-Host -ForegroundColor DarkGray -Object 'THE FOLLOWING SERVERS MAY BE DEAD:'
                 Write-Host -ForegroundColor DarkGray ($maybeDeadServers | Format-Table -AutoSize | Out-String)
                 Write-Host -ForegroundColor DarkGray -Object "Log File: $maybeDeadServersPath`n"
-            } else {
+            }
+            else {
                 Write-Host -ForegroundColor Green -Object "NO SERVERS WERE FOUND IN A MAYBE DEAD STATE.`n"
             }
 
@@ -239,7 +243,8 @@ Function Invoke-PSVulnCheck {
                 Write-Host -ForegroundColor Magenta -Object 'THE FOLLOWING SERVERS MAY BE ALIVE:'
                 Write-Host -ForegroundColor Magenta ($maybeAliveServers | Select -Property * | Format-Table -AutoSize | Out-String)
                 Write-Host -ForegroundColor Magenta -Object "Log File: $maybeAliveServersPath`n"
-            } else {
+            }
+            else {
                 Write-Host -ForegroundColor Green -Object "NO SERVERS WERE FOUND IN A MAYBE ALIVE STATE.`n"
             }
 
@@ -248,7 +253,8 @@ Function Invoke-PSVulnCheck {
                 Write-Host -ForegroundColor Red -Object 'THE FOLLOWING SERVERS ARE IN A BAD STATE:'
                 Write-Host -ForegroundColor Red ($vulnerableServers | Format-Table -AutoSize | Out-String)
                 Write-Host -ForegroundColor Red -Object "Log File: $VulnerableServersPath"
-            } else {
+            }
+            else {
                 Write-Host -ForegroundColor Green -Object 'NO SERVERS WERE FOUND IN A ' -NoNewline
                 Write-Host -ForegroundColor Red -Object 'BAD ' -NoNewline
                 Write-Host -ForegroundColor Green -Object 'STATE.'
