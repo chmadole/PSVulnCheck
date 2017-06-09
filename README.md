@@ -19,6 +19,7 @@ you cannot specify the value from pipeline by property name.  You must pass in a
 strings `[string[]]`.
 
 The following example uses the `serversCSV.csv` file containing this code:
+```
     server,role
     server1.contoso.com,app
     server2.contoso.com,app
@@ -30,6 +31,6 @@ The following example uses the `serversCSV.csv` file containing this code:
     server8.contoso.com,sql
     server9.contoso.com,wac
     server10.contoso.com,wac
-
+```
     (Import-Csv C:\Temp\serversCSV.csv).server | Invoke-PSVulnCheck
 This functions the same as the previous example, but provides more insight in how to pass a named property into the command.
