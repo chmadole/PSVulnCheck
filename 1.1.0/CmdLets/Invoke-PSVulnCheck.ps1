@@ -23,82 +23,67 @@
                 @{
                     VulnerabilityName = 'WannaCry' #this will be used when naming output files
                     
-                    ApplicableHotfixes = @('KB4012214','KB4012217','KB4012213','KB4012216','KB4012212','KB4012215') #https://technet.microsoft.com/library/security/MS17-010
+                    ApplicableHotfixes = @('KB4012214','KB4012217','KB4012213','KB4012216','KB4012212','KB4012215','KB4012606','4013198','4013429') # WannaCry:s https://technet.microsoft.com/library/security/MS17-010
                     
                     TargetFile = 'C:\Windows\System32\win32k.sys' #we will check this file's version
                     
                     FileVersions = @{
-                        # OS Versions: https://msdn.microsoft.com/en-us/library/windows/desktop/ms724832(v=vs.85).aspx
-                        # Version 6.1 - Windows 7 / Windows Server 2008R2
-                        # Version 6.2 - Windows 8 / Windows server 2102
-                        # Version 6.3 - Windows 8.1 / Windows Server 2012R2
-                        
-                        Win6_1 = '6.1.7601.23677' #https://support.microsoft.com/en-us/help/4012212/march-2007-security-only-quality-update-for-windows-7-sp1-and-windows-server-2008-r2-sp1 
-                        Win6_2 = '6.2.9200.22099' #https://support.microsoft.com/en-us/help/4012217/march-2017-security-monthly-quality-rollup-for-windows-server-2012
-                        Win6_3 = '6.3.9600.18603' #https://support.microsoft.com/en-us/help/4012213/march-2017-security-only-quality-update-for-windows-8-1-and-windows-server-2012-r2
+                        Win6_1      = '6.1.7601.23677'   #https://support.microsoft.com/en-us/help/4012212/march-2007-security-only-quality-update-for-windows-7-sp1-and-windows-server-2008-r2-sp1 
+                        Win6_2      = '6.2.9200.22099'   #https://support.microsoft.com/en-us/help/4012217/march-2017-security-monthly-quality-rollup-for-windows-server-2012
+                        Win6_3      = '6.3.9600.18603'   #https://support.microsoft.com/en-us/help/4012213/march-2017-security-only-quality-update-for-windows-8-1-and-windows-server-2012-r2
+                        Win10_10240 = '10.0.10240.16384' #https://support.microsoft.com/en-sg/help/4019474 and scroll down to Fle Information bullet to download the CSV list of file versions.
+                        Win10_10586 = '10.0.10586.20'    #https://support.microsoft.com/en-sg/help/4019473 and scroll down to Fle Information bullet to download the CSV list of file versions.
+                        Win10_14393 = '10.0.14393.594'   #https://support.microsoft.com/en-sg/help/4013429 and scroll down to Fle Information bullet to download the CSV list of file versions.
+                        Win10_15063 = '10.0.15063.0'     #https://support.microsoft.com/en-sg/help/4020102 and scroll down to Fle Information bullet to download the CSV list of file versions.
                     }
                 }
                 #create additional hash tables here to process multiple vulns or multiple files
             )
 
     .EXAMPLE
-        The following examples use the servers.txt file containing this code:
-            server1.contoso.com
-            server2.contoso.com
-            server3.contoso.com
-            server4.contoso.com
-            server5.contoso.com
-            server6.contoso.com
-            server7.contoso.com
-            server8.contoso.com
-            server9.contoso.com
-            server10.contoso.com
+        First you'll need to define the vulnerability that you're looking for:
+        Start with virus definition manifest file like this with a `.psd1` extention, named, for example,  `vuln.psd1`.
 
-        And a VulnerabilityManifest.psd1 file containing this code:
-            @(
-                @{
-                    VulnerabilityName = 'WannaCry'
-                    
-                    ApplicableHotfixes = @('KB4012214','KB4012217','KB4012213','KB4012216','KB4012212','KB4012215')
-                    
-                    TargetFile = 'C:\Windows\System32\win32k.sys'
-                    
-                    FileVersions = @{
-                        Win6_1 = '6.1.7601.23677'
-                        Win6_2 = '6.2.9200.22099'
-                        Win6_3 = '6.3.9600.18603'
-                    }
+        The following definition will find vulnerability for the ransomware [WannaCry][WannaCryLink].
+        
+        @(
+            @{
+                VulnerabilityName = 'WannaCry' #this will be used when naming output files
+                
+                ApplicableHotfixes = @('KB4012214','KB4012217','KB4012213','KB4012216','KB4012212','KB4012215','KB4012606','4013198','4013429') # WannaCry:s https://technet.microsoft.com/library/security/MS17-010
+                
+                TargetFile = 'C:\Windows\System32\win32k.sys' #we will check this file's version
+                
+                FileVersions = @{
+                    Win6_1      = '6.1.7601.23677'   #https://support.microsoft.com/en-us/help/4012212/march-2007-security-only-quality-update-for-windows-7-sp1-and-windows-server-2008-r2-sp1 
+                    Win6_2      = '6.2.9200.22099'   #https://support.microsoft.com/en-us/help/4012217/march-2017-security-monthly-quality-rollup-for-windows-server-2012
+                    Win6_3      = '6.3.9600.18603'   #https://support.microsoft.com/en-us/help/4012213/march-2017-security-only-quality-update-for-windows-8-1-and-windows-server-2012-r2
+                    Win10_10240 = '10.0.10240.16384' #https://support.microsoft.com/en-sg/help/4019474 and scroll down to Fle Information bullet to download the CSV list of file versions.
+                    Win10_10586 = '10.0.10586.20'    #https://support.microsoft.com/en-sg/help/4019473 and scroll down to Fle Information bullet to download the CSV list of file versions.
+                    Win10_14393 = '10.0.14393.594'   #https://support.microsoft.com/en-sg/help/4013429 and scroll down to Fle Information bullet to download the CSV list of file versions.
+                    Win10_15063 = '10.0.15063.0'     #https://support.microsoft.com/en-sg/help/4020102 and scroll down to Fle Information bullet to download the CSV list of file versions.
                 }
-            )
+            }
+        )
+        
+        *For more information on sourcing the information for the manifest file, view the VulnerabilityManifest.psd1 file included with this module.*
 
     .EXAMPLE
-        Invoke-PSVulnCheck -InputObject (Get-Content C:\Users\<Username>\Documents\servers.txt) `
-        -VulnerabilityManifest C:\Users\<Username>\Documents\VulnerabilityManifest.psd1
-
-            Pulls server names from a flat file with server names 1 per line and checks for the
-            vulnerability defined by VulnerabilityManifest.psd1.
-            Writes one to six output files to C:\Users\<Username>\Documents\PSVulnCheck (depending on
-            the state of the scanned items).
-            Displays color coded output to the screen.
+        Invoke-PSVulnCheck -ComputerName @('server1','server2') -Vuln vuln.psd1
+            Checks server1 and server2 for the vulnerability specified in the vuln.psd1 file.  Writes 4 output files to C:\Temp\PSVulnCheck.  Displays color coded output screen.
 
     .EXAMPLE
-        $results = Invoke-PSVulnCheck -ComputerName (Get-Content C:\Users\<Username>\Documents\servers.txt) `
-        -VulnerabilityManifest C:\Users\<Username>\Documents\VulnerabilityManifest.psd1 `
-        -OutputDirectory 'C:\Users\<Username>\Documents\AssetCheck' -passthru
-            Same as above except results will be placed in C:\Users\<Username>\Documents\AssetCheck
-            An array of [PSCustomObjects] will be returned and stored in the variable $results for you to
-            utilize.
+        Get-Content C:\Temp\servers.txt |  Invoke-PSVulnCheck
+            Pulls a list of servers (1 [FQDN](https://www.google.com/search?q=FQDN&ie=utf-8&oe=utf-8) per line) using the pipeline and checks for vulnerability.  Note, due to the use of invoke-parallel to speed processing, you cannot [specify the value from pipeline by property name](https://blogs.technet.microsoft.com/heyscriptingguy/2013/03/25/learn-about-using-powershell-value-binding-by-property-name/).  You must pass in an array of strings `[string[]]`.
 
     .EXAMPLE
-        Get-Content C:\Users\<Username>\Documents\servers.txt |  Invoke-PSVulnCheck
-            Same as above, but uses pipeline to import servers.  Note, due to the use of invoke-parallel,
-            you cannot specify the value from pipeline by property name.  You must pass in an array of
-            strings [string[]].
-            The default Vulnerability manifest file is used ("$PSScriptRoot\VulnerabilityManifest.psd1")
-            for the WannaCry vulnerability from 2017.
+         $results = Get-Content C:\Temp\servers.txt | Invoke-PSVulnCheck -OutputDirectory 'C:\Temp\AssetCheck' -passthru
+            Same as above except results will be placed in `C:\Temp\AssetCheck`.
+            By using the -passthrue parameter, an array of  `[PSCustomObjects[]]` will be returned and stored in the variable $results for you to utilize.
 
     .EXAMPLE
-        The following example use the serversCSV.csv file containing this code:
+        The following example uses the `servers.csv` file containing this code:
+
             server,role
             server1.contoso.com,app
             server2.contoso.com,app
@@ -111,9 +96,8 @@
             server9.contoso.com,wac
             server10.contoso.com,wac
 
-        (Import-Csv C:\Temp\serversCSV.csv).server | Invoke-PSVulnCheck
-            This functions the same as the previous example, but provides more insight in how to pass
-            a named property into the command.
+        (Import-Csv C:\Temp\servers.csv).server | Invoke-PSVulnCheck
+            This functions the same as the previous example, but provides more insight in how to pass a named property into the command.
 
     .FUNCTIONALITY
         PowerShell Language
