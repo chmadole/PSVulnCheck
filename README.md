@@ -7,7 +7,7 @@ A PowerShell module to check the Windows operating system for a particular vulne
 ### 1. First you'll need to define the vulnerability that you're looking for:
 Start with virus definition manifest file like this with a `.psd1` extention, named, for example,  `vuln.psd1`.
 
-The following definition will find vulnerability for the ransomware [WannaCry](https://en.wikipedia.org/wiki/WannaCry_ransomware_attack).
+The following definition will find vulnerability for the ransomware [WannaCry][WannaCryLink].
 ```
 @(
     @{
@@ -31,16 +31,8 @@ The following definition will find vulnerability for the ransomware [WannaCry](h
 ```
 *For more information on sourcing the information for the manifest file, view the [VulnerabilityManifest.psd1](./1.1.0/VulnerabilityManifest.psd1) file.*
 
-### 2. Next, import the module
 
-1. `Import-Module <FullPathToModule>\<moduleVersion>\PSVulnCheck.psd1`
-
-    or
-
-1) Copy the complete PSVulnCheck module directory to `C:\Program Files\WindowsPowerShell\Modules`
-2) Execute `Import-Module PSVulnCheck`
-
-### 3. Finally, execute PSVulnCheck by calling the Invoke-PSVulnCheck cmdlet with the vuln.psd1 manifest that you created above.
+### 2. Next, execute PSVulnCheck by calling the Invoke-PSVulnCheck cmdlet with the vuln.psd1 manifest that you created above.
 
   1. The following code checks server1 and server2 for the vulnerability specified in the vuln.psd1 file.  Writes 4 output files to C:\Temp\PSVulnCheck.  Displays color coded output screen.
 
@@ -71,3 +63,58 @@ The following definition will find vulnerability for the ransomware [WannaCry](h
   5. This functions the same as the previous example, but provides more insight in how to pass a named property into the command.
 
          (Import-Csv C:\Temp\servers.csv).server | Invoke-PSVulnCheck
+
+## Motivation
+
+When the big malware of the year happens, everyone enjoys the scramble of validating that their assets are not vulnerable.  Inevitably in large environments, you'll find assets that fall out of your standard scanning and patching, or you'd like to have a separate or redundant evaluation.  PSVulnCheck was created as a tool to fulfill this need.  At the time of its development, [WannaCry][WannaCryLink] was the malware of the moment, hence the examples are for that vulnerability.  However, when the next virus comes along, sub in the effected file and the minimum required version, and the KB numbers which remediate the item.  The tool should operate for any vulnerability.
+
+## Installation
+
+1. `Import-Module <FullPathToModule>\<moduleVersion>\PSVulnCheck.psd1`
+
+    or
+
+1) Copy the complete PSVulnCheck module directory to `C:\Program Files\WindowsPowerShell\Modules`
+2) Execute `Import-Module PSVulnCheck`
+
+## API Reference
+This readme.md file serves as one API reference to the module.
+
+Also, from the PowerShell prompt you can access using standard help:
+
+    PS> Get-Help Invoke-PSVulnCheck
+
+## Tests
+
+No tests have been written yet for the module.
+
+## Contributors
+
+Contributions and constructive criticism are always welcome.  Please use the GitHub Issues page for problems or create a pull request for modifications/improvements.
+
+## License
+
+MIT License
+
+Copyright (c) 2017 Microsoft SharePoint Online
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+[WannaCryLink]: https://en.wikipedia.org/wiki/WannaCry_ransomware_attack
