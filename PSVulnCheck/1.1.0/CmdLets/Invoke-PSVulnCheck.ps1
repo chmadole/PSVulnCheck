@@ -125,7 +125,7 @@ Function Invoke-PSVulnCheck {
 
     Begin {
         #adapted from https://stackoverflow.com/questions/23066783/how-to-strip-illegal-characters-before-trying-to-save-filenames
-        Function Remove-InvalidFileNameChars {
+        Function Get-FileNameRemoveInvalidChar {
             param(
                 [Parameter(Mandatory, Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
                 [String[]]$FileName
@@ -155,7 +155,7 @@ Function Invoke-PSVulnCheck {
 
             #create output directory
             $timestamp = get-date -format "yyyyMMMddThhmm"
-            $vulnName = $vuln.VulnerabilityName | Remove-InvalidFileNameChars
+            $vulnName = $vuln.VulnerabilityName | Get-FileNameRemoveInvalidChar
             $OutputDirectory = "$OutputDirectory\$timestamp\$vulnName"
             if (!(Test-Path $OutputDirectory)) {
                 try { $null = (New-Item -Path $OutputDirectory -ItemType Directory -ErrorAction Stop)}
@@ -225,7 +225,7 @@ Function Invoke-PSVulnCheck {
             #display maybe alive servers in magenta
             if ($maybeAliveServers) {
                 Write-Host -ForegroundColor Magenta -Object 'THE FOLLOWING SERVERS MAY BE ALIVE:'
-                Write-Host -ForegroundColor Magenta ($maybeAliveServers | Select -Property * | Format-Table -AutoSize | Out-String)
+                Write-Host -ForegroundColor Magenta ($maybeAliveServers | Select-Object -Property * | Format-Table -AutoSize | Out-String)
                 Write-Host -ForegroundColor Magenta -Object "Log File: $maybeAliveServersPath`n"
             }
             else {

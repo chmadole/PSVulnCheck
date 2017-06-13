@@ -3,13 +3,13 @@
 Function Test-ComputerState {
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory,ValueFromPipeline)]
+        [Parameter(Mandatory, ValueFromPipeline)]
         [string[]] $computerName,
         
         [string] $logfile
     )
 
-    Begin{}
+    Begin {}
     #Process{} - omitted to facilitate Invoke-Parallel Processing
     End {
 
@@ -20,18 +20,18 @@ Function Test-ComputerState {
 
         $input | Invoke-Parallel -LogFile $logFile -Throttle 50 -RunspaceTimeout 600 {
             $iComputerName = $_
-            $output        = [PSCustomObject]@{ComputerName = $iComputerName}
+            $output = [PSCustomObject]@{ComputerName = $iComputerName}
 
             #Ping it
             $pingResponse = $null
-            try     { $pingResponse = (Test-Connection -ComputerName $iComputerName -Count 2 -Quiet -ErrorAction Stop) } 
-            catch   { $pingResponse = $_.exception }
+            try { $pingResponse = (Test-Connection -ComputerName $iComputerName -Count 2 -Quiet -ErrorAction Stop) } 
+            catch { $pingResponse = $_.exception }
             finally { $output | Add-Member -MemberType NoteProperty -Name PingResponse -Value $pingResponse}
             
             #resolve DNS
             $DNSResponse = $null
-            try     { $DNSResponse = ([Net.DNS]::GetHostEntry($iComputerName)).AddressList } 
-            catch   { $DNSResponse = if ($_.exception.message -match 'No such host is known') {'No DNS record'} else {$_.exception.message} }
+            try { $DNSResponse = ([Net.DNS]::GetHostEntry($iComputerName)).AddressList } 
+            catch { $DNSResponse = if ($_.exception.message -match 'No such host is known') {'No DNS record'} else {$_.exception.message} }
             finally { $output | Add-Member -MemberType NoteProperty -Name DNSResponse -Value $DNSResponse}
 
             #try to grab a win32 piece of info
@@ -42,7 +42,7 @@ Function Test-ComputerState {
                 $WMIObj.query = "SELECT Caption,OSArchitecture,Version,ServicePackMajorVersion FROM Win32_OperatingSystem"   
                 $OS = $WMIObj.get() | ForEach-Object {"$($_.Caption) SP$($_.ServicePackMajorVersion) $($_.OSArchitecture) ($($_.Version))"}
             }
-            catch   { $OS = if ($_.exception -match 'Exception calling "Get" with "0"') {'WMI Query Failed'} else {$_.exception } }
+            catch { $OS = if ($_.exception -match 'Exception calling "Get" with "0"') {'WMI Query Failed'} else {$_.exception } }
             finally {  $output | Add-Member -MemberType NoteProperty -Name 'OSviaWMI' -Value $OS}
             
             #try getting info from the box using psexec
@@ -58,8 +58,8 @@ Function Test-ComputerState {
 <#
 $iComputerName = '019D-CO1-SSQ04.019D.MGD.MSFT.NET'
 $iComputerName = '025D-BN1-PAS01.025d.mgd.msft.net' #good
-$iComputerName = (import-csv D:\chmadole\WannaCrySupplementals\UnknownServers.csv | select -first 10).computername
+$iComputerName = (import-csv D:\chmadole\WannaCrySupplementals\UnknownServers.csv | Select-Object -first 10).computername
 
 remove-module psvulncheck ; import-module D:\chmadole\modules\PSVulnCheck\PSVulnCheck\1.1.0\PSVulnCheck.psd1
-test-computerstate -computername (import-csv D:\chmadole\WannaCrySupplementals\UnknownServers.csv | select -first 50).computername | format-table -autosize
+test-computerstate -computername (import-csv D:\chmadole\WannaCrySupplementals\UnknownServers.csv | Select-Object -first 50).computername | format-table -autosize
 #>
