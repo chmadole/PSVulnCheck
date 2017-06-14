@@ -86,7 +86,7 @@ Also, from the PowerShell prompt you can access using standard help:
 
 ## Tests
 
-No tests have been written yet for the module.
+PSScriptAnalyzer used for linting; Pester tests pending.
 
 ## Contributors
 
