@@ -163,12 +163,12 @@ Function Invoke-PSVulnCheck {
             }
             
             #Test vulnerability -- default parameters are used, which evaluate WannaCry
-            [array]$allServers = Test-Vulnerability -computerName $ComputerName -KB $vuln.ApplicableHotfixes -TargetFile $vuln.TargetFile -fileVersions $vuln.FileVersions
+            [array]$allServers = Test-Vulnerability -computerName $ComputerName -KB $vuln.ApplicableHotfixes -TargetFile $vuln.TargetFile -fileVersions $vuln.FileVersions -Services $vuln.Services
             
             #create subset of server for display
             $healthyServers = $allServers.Where{ $_.FileVersionOk -eq $true }
             $unknownServers = $allServers.Where{ $_.status -eq 'Disconnected' -or $_.status -eq 'Unknown' }
-            $vulnerableServers = $allServers.Where{ $_.FileVersionOk -eq $false }
+            $vulnerableServers = $allServers.Where{ $_.FileVersionOk -eq $false -or $_.ServicesOK -eq $false}
 
             #if status of servers is unknown, try to ping and do other tests to get their state
             if ($unknownServers) {
@@ -186,17 +186,17 @@ Function Invoke-PSVulnCheck {
             $maybeDeadServersPath = "$OutputDirectory\$vulnName-MaybeDeadServers_$timestamp.csv"
             $maybeAliveServersPath = "$OutputDirectory\$vulnName-MaybeAliveServers_$timestamp.csv"
 
-            if ($allServers) { $allServers        | Export-CSV -NoTypeInformation -Path $allServersPath }
-            if ($healthyServers) { $healthyServers    | Export-CSV -NoTypeInformation -Path $healthyServersPath }
-            if ($unknownServers) { $unknownServers    | Export-CSV -NoTypeInformation -Path $unknownServersPath }
+            if ($allServers) { $allServers | Export-CSV -NoTypeInformation -Path $allServersPath }
+            if ($healthyServers) { $healthyServers | Export-CSV -NoTypeInformation -Path $healthyServersPath }
+            if ($unknownServers) { $unknownServers | Export-CSV -NoTypeInformation -Path $unknownServersPath }
             if ($vulnerableServers) { $vulnerableServers | Export-CSV -NoTypeInformation -Path $vulnerableServersPath }
-            if ($maybeDeadServers) { $maybeDeadServers  | Export-CSV -NoTypeInformation -Path $maybeDeadServersPath }
+            if ($maybeDeadServers) { $maybeDeadServers | Export-CSV -NoTypeInformation -Path $maybeDeadServersPath }
             if ($maybeAliveServers) { $maybeAliveServers | Export-CSV -NoTypeInformation -Path $maybeAliveServersPath }
 
             #display healthyServers in green
             If ($healthyServers) {
                 Write-Host -ForegroundColor Green -Object 'THE FOLLOWING SERVERS CONNECTED SUCCESSFULLY AND ARE IN A KNOWN HEALTHY STATE:'
-                Write-Host -ForegroundColor Green ($healthyServers | Select-Object -Property ComputerName, OSVersion, FileVersionOk, TargetFile, TargetFileVersion, ActualFileVersion, Patched, InstalledKBs |  Format-Table -AutoSize | Out-String)
+                Write-Host -ForegroundColor Green ($healthyServers | Format-Table -AutoSize | Out-String)
                 Write-Host -ForegroundColor Green -Object "Log File: $healthyServersPath`n"
             }
             else {
@@ -225,7 +225,7 @@ Function Invoke-PSVulnCheck {
             #display maybe alive servers in magenta
             if ($maybeAliveServers) {
                 Write-Host -ForegroundColor Magenta -Object 'THE FOLLOWING SERVERS MAY BE ALIVE:'
-                Write-Host -ForegroundColor Magenta ($maybeAliveServers | Select-Object -Property * | Format-Table -AutoSize | Out-String)
+                Write-Host -ForegroundColor Magenta ($maybeAliveServers | Format-Table -AutoSize | Out-String)
                 Write-Host -ForegroundColor Magenta -Object "Log File: $maybeAliveServersPath`n"
             }
             else {
