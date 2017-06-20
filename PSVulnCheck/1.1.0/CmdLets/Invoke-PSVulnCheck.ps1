@@ -163,12 +163,12 @@ Function Invoke-PSVulnCheck {
             }
             
             #Test vulnerability -- default parameters are used, which evaluate WannaCry
-            [array]$allServers = Test-Vulnerability -computerName $ComputerName -KB $vuln.ApplicableHotfixes -TargetFile $vuln.TargetFile -fileVersions $vuln.FileVersions -Services $vuln.Services
+            [array]$allServers = Test-Vulnerability -computerName $ComputerName -KB $vuln.ApplicableHotfixes -TargetFile $vuln.TargetFile -fileVersions $vuln.FileVersions -Services $vuln.Services -verbose
             
             #create subset of server for display
-            $healthyServers = $allServers.Where{ $_.FileVersionOk -eq $true }
+            $healthyServers = $allServers.Where{ $_.FileVersionOk -eq $true -or $_.AllServicesOK -eq $true }
             $unknownServers = $allServers.Where{ $_.status -eq 'Disconnected' -or $_.status -eq 'Unknown' }
-            $vulnerableServers = $allServers.Where{ $_.FileVersionOk -eq $false -or $_.ServicesOK -eq $false}
+            $vulnerableServers = $allServers.Where{ $_.FileVersionOk -eq $false -or $_.AllServicesOK -eq $false }
 
             #if status of servers is unknown, try to ping and do other tests to get their state
             if ($unknownServers) {
