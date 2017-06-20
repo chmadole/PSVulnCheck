@@ -167,7 +167,8 @@ Function Invoke-PSVulnCheck {
             
             #create subset of server for display
             $healthyServers = $allServers.Where{ $_.FileVersionOk -eq $true -or $_.AllServicesOK -eq $true }
-            $unknownServers = $allServers.Where{ $_.status -eq 'Disconnected' -or $_.status -eq 'Unknown' }
+            $unknownServers = $allServers.Where{ $_.status -eq 'Disconnected' -or $_.status -eq 'Unknown'}
+            $accessDeniedServers = $allServers.Where{ $_.status -eq 'AccessDenied' }
             $vulnerableServers = $allServers.Where{ $_.FileVersionOk -eq $false -or $_.AllServicesOK -eq $false }
 
             #if status of servers is unknown, try to ping and do other tests to get their state
@@ -182,6 +183,7 @@ Function Invoke-PSVulnCheck {
             $allServersPath = "$OutputDirectory\$vulnName-AllServers_$timestamp.csv"
             $healthyServersPath = "$OutputDirectory\$vulnName-HealthyServers_$timestamp.csv"
             $unknownServersPath = "$OutputDirectory\$vulnName-UnknownServers_$timestamp.csv"
+            $accessDeniedServersPath = "$OutputDirectory\$vulnName-accessDeniedServers_$timestamp.csv"
             $vulnerableServersPath = "$OutputDirectory\$vulnName-VulnerableServers_$timestamp.csv"
             $maybeDeadServersPath = "$OutputDirectory\$vulnName-MaybeDeadServers_$timestamp.csv"
             $maybeAliveServersPath = "$OutputDirectory\$vulnName-MaybeAliveServers_$timestamp.csv"
@@ -189,6 +191,7 @@ Function Invoke-PSVulnCheck {
             if ($allServers) { $allServers | Export-CSV -NoTypeInformation -Path $allServersPath }
             if ($healthyServers) { $healthyServers | Export-CSV -NoTypeInformation -Path $healthyServersPath }
             if ($unknownServers) { $unknownServers | Export-CSV -NoTypeInformation -Path $unknownServersPath }
+            if ($accessDeniedServers) { $accessDeniedServers | Export-CSV -NoTypeInformation -Path $accessDeniedServersPath }
             if ($vulnerableServers) { $vulnerableServers | Export-CSV -NoTypeInformation -Path $vulnerableServersPath }
             if ($maybeDeadServers) { $maybeDeadServers | Export-CSV -NoTypeInformation -Path $maybeDeadServersPath }
             if ($maybeAliveServers) { $maybeAliveServers | Export-CSV -NoTypeInformation -Path $maybeAliveServersPath }
@@ -230,6 +233,16 @@ Function Invoke-PSVulnCheck {
             }
             else {
                 Write-Host -ForegroundColor Green -Object "NO SERVERS WERE FOUND IN A MAYBE ALIVE STATE.`n"
+            }
+
+            #display access denied servers in magenta
+            if ($accessDeniedServers) {
+                Write-Host -ForegroundColor DarkCyan -Object 'THE FOLLOWING SERVERS RETURNED ERROR ACCESS DENIED:'
+                Write-Host -ForegroundColor DarkCyan ($accessDeniedServers | Format-Table -AutoSize | Out-String)
+                Write-Host -ForegroundColor DarkCyan -Object "Log File: $accessDeniedServersPath`n"
+            }
+            else {
+                Write-Host -ForegroundColor Green -Object "NO SERVERS RETURNED ERROR ACCESS DENIED`n"
             }
 
             #display vulnerable servers in red
