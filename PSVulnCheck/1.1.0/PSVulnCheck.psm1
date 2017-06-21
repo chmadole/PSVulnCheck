@@ -1,1 +1,1 @@
-Get-ChildItem (Join-Path $PSScriptRoot *.ps1) -Recurse | ForEach-Object { . $_.FullName}
+Get-ChildItem (Join-Path $PSScriptRoot *.ps1) -Recurse | ForEach-Object { if ($_.FullName -notmatch '.Tests.ps1') {. $_.FullName}}
