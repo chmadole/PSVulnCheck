@@ -29,6 +29,20 @@ The following definition will find vulnerability for the ransomware [WannaCry][W
     }
 )
 ```
+
+The follow definition will find vulnerability defined by the wsearch service being installed or not disabled.
+
+    @{
+        VulnerabilityName = 'WSearch'
+
+        Services = @(
+            @{ Name = 'wsearch'
+               TargetPresence = 'Absent' #[Absent|Present]
+               TargetStartMode = 'Disabled' #[Auto|Disabled|Manual]
+            }
+        )
+    }
+
 *For more information on sourcing the information for the manifest file, view the [VulnerabilityManifest.psd1](./1.1.0/VulnerabilityManifest.psd1) file.*
 
 
